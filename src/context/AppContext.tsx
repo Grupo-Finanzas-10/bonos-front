@@ -1,142 +1,192 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import type { User, BondData, AppConfig } from '../types';
+import { apiService } from '../services/api';
 import { 
-  loadBondsFromLocalStorage, 
-  saveBondsToLocalStorage, 
   loadConfigFromLocalStorage, 
-  saveConfigToLocalStorage,
-  loadUsersFromLocalStorage,
-  saveUsersToLocalStorage,
-  loadCurrentUserFromLocalStorage,
-  removeCurrentUserFromLocalStorage,
-  validateUserCredentials
+  saveConfigToLocalStorage
 } from '../utils/localStorage';
 
 interface AuthContextType {
   user: User | null;
-  login: (username: string, password: string) => boolean;
+  login: (username: string, password: string) => Promise<boolean>;
+  register: (userData: Omit<User, 'id' | 'createdAt'>) => Promise<boolean>;
   logout: () => void;
   isAuthenticated: boolean;
+  loading: boolean;
 }
 
 interface AppContextType {
   bonds: BondData[];
   config: AppConfig;
-  addBond: (bond: Omit<BondData, 'id' | 'createdAt' | 'updatedAt'>) => void;
-  updateBond: (id: string, bond: Partial<BondData>) => void;
-  deleteBond: (id: string) => void;
+  addBond: (bond: Omit<BondData, 'id' | 'createdAt' | 'updatedAt'>) => Promise<void>;
+  updateBond: (id: string, bond: Partial<BondData>) => Promise<void>;
+  deleteBond: (id: string) => Promise<void>;
   getBond: (id: string) => BondData | undefined;
   updateConfig: (config: Partial<AppConfig>) => void;
+  loadBonds: () => Promise<void>;
+  loading: boolean;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 const AppContext = createContext<AppContextType | undefined>(undefined);
 
-// Usuarios de ejemplo (en producción esto vendría de una base de datos)
-const defaultUsers: User[] = [
-  {
-    id: '1',
-    username: 'emisor',
-    password: 'emisor123',
-    name: 'Empresa Emisora',
-    email: 'emisor@demo.com',
-    role: 'emisor',
-    createdAt: new Date('2024-01-01'),
-    companyName: 'Demo Corp S.A.C.',
-    ruc: '20123456789',
-    sector: 'Tecnología'
-  },
-  {
-    id: '2',
-    username: 'inversor',
-    password: 'inversor123',
-    name: 'Inversor Demo',
-    email: 'inversor@demo.com',
-    role: 'inversor',
-    createdAt: new Date('2024-01-01'),
-    investorType: 'individual',
-    riskProfile: 'moderate',
-    investmentAmount: 50000
-  },
-  {
-    id: '3',
-    username: 'admin',
-    password: 'admin123',
-    name: 'Administrador',
-    email: 'admin@demo.com',
-    role: 'emisor', // Admin tiene permisos de emisor
-    createdAt: new Date('2024-01-01'),
-    companyName: 'Admin Corp',
-    ruc: '20987654321',
-    sector: 'Servicios'
-  },
-];
-
-// Función para inicializar usuarios demo si no existen
-const initializeDemoUsers = () => {
-  const existingUsers = loadUsersFromLocalStorage();
-  
-  // Si no hay usuarios, crear los de demo
-  if (existingUsers.length === 0) {
-    saveUsersToLocalStorage(defaultUsers);
-  } else {
-    // Verificar que los usuarios demo existan, si no, agregarlos
-    const usernames = existingUsers.map(u => u.username);
-    const missingDemoUsers = defaultUsers.filter(user => !usernames.includes(user.username));
-    
-    if (missingDemoUsers.length > 0) {
-      const updatedUsers = [...existingUsers, ...missingDemoUsers];
-      saveUsersToLocalStorage(updatedUsers);
-    }
-  }
-};
-
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    // Inicializar usuarios demo
-    initializeDemoUsers();
+    // Verificar si hay una sesión guardada (token y datos del usuario)
+    const token = localStorage.getItem('auth_token');
+    const savedUser = localStorage.getItem('current_user');
     
-    // Verificar si hay una sesión guardada
-    const savedUser = loadCurrentUserFromLocalStorage();
-    if (savedUser) {
-      setUser(savedUser);
+    console.log('🔍 Verificando sesión guardada...');
+    console.log('🎫 Token encontrado:', token ? 'SÍ' : 'NO');
+    console.log('👤 Usuario guardado:', savedUser ? 'SÍ' : 'NO');
+    
+    if (token && savedUser) {
+      try {
+        const userData = JSON.parse(savedUser);
+        console.log('🔄 Restaurando usuario desde localStorage:', userData);
+        setUser(userData);
+        console.log('✅ Sesión restaurada exitosamente');
+      } catch (error) {
+        console.error('❌ Error parseando usuario guardado:', error);
+        // Si hay error, limpiar datos corruptos
+        localStorage.removeItem('auth_token');
+        localStorage.removeItem('current_user');
+      }
+    } else if (token && !savedUser) {
+      console.log('⚠️ Token encontrado pero sin datos de usuario, limpiando...');
+      localStorage.removeItem('auth_token');
+    } else {
+      console.log('ℹ️ No hay sesión guardada');
     }
   }, []);
 
-  const login = (username: string, password: string): boolean => {
-    // Validar credenciales usando la función de localStorage
-    const foundUser = validateUserCredentials(username, password);
-
-    if (foundUser) {
-      // No guardar la contraseña en la sesión por seguridad
-      const userWithoutPassword = { ...foundUser, password: '' };
-      setUser(userWithoutPassword);
-      return true;
+  const login = async (username: string, password: string): Promise<boolean> => {
+    console.log('🔐 AuthProvider: Iniciando login...');
+    setLoading(true);
+    
+    try {
+      const response = await apiService.login({ username, password });
+      console.log('🎯 AuthProvider: Respuesta de login:', response);
+      
+      if (response.token && response.role) {
+        // Crear objeto usuario con los datos disponibles
+        const userData: User = {
+          id: response.id ? String(response.id) : username, // Usar el ID real si está disponible, sino usar username como fallback
+          username: response.username || username,
+          password: '', // No guardamos la contraseña
+          name: response.name || username, // Usar el nombre real si está disponible
+          email: response.email || `${username}@demo.com`, // Usar el email real si está disponible
+          role: response.role as 'emisor' | 'inversor',
+          createdAt: new Date(),
+        };
+        
+        console.log('👤 AuthProvider: Usuario creado con ID:', userData.id);
+        
+        // Guardar token y datos del usuario en localStorage para persistencia
+        localStorage.setItem('auth_token', response.token);
+        localStorage.setItem('current_user', JSON.stringify(userData));
+        
+        setUser(userData);
+        console.log('✅ AuthProvider: Usuario autenticado y sesión guardada:', userData);
+        
+        // Disparar evento personalizado para que AppProvider cargue los bonos
+        window.dispatchEvent(new CustomEvent('userAuthenticated'));
+        
+        return true;
+      }
+      
+      return false;
+    } catch (error) {
+      console.error('❌ AuthProvider: Error en login:', error);
+      return false;
+    } finally {
+      setLoading(false);
     }
+  };
 
-    return false;
+  const register = async (userData: Omit<User, 'id' | 'createdAt'>): Promise<boolean> => {
+    console.log('📝 AuthProvider: Iniciando registro...');
+    console.log('📋 AuthProvider: Datos de registro:', userData);
+    setLoading(true);
+    
+    try {
+      // Enviar todos los datos del usuario al backend
+      const registerData = {
+        username: userData.username,
+        password: userData.password,
+        role: userData.role,
+        name: userData.name,
+        email: userData.email,
+        // Campos específicos del emisor
+        ...(userData.role === 'emisor' && {
+          companyName: userData.companyName,
+          ruc: userData.ruc,
+          sector: userData.sector,
+        }),
+        // Campos específicos del inversor
+        ...(userData.role === 'inversor' && {
+          investorType: userData.investorType,
+          riskProfile: userData.riskProfile,
+          investmentAmount: userData.investmentAmount,
+        }),
+      };
+      
+      console.log('📤 AuthProvider: Enviando datos al backend:', registerData);
+      await apiService.register(registerData);
+      
+      console.log('✅ AuthProvider: Registro completado exitosamente');
+      
+      // Si el registro es exitoso, intentar loguear automáticamente al usuario
+      console.log('🔄 AuthProvider: Auto-logueando usuario después del registro...');
+      const loginSuccess = await login(userData.username, userData.password);
+      
+      if (loginSuccess) {
+        console.log('✅ AuthProvider: Usuario logueado automáticamente después del registro');
+      } else {
+        console.log('⚠️ AuthProvider: Registro exitoso pero fallo en auto-login');
+      }
+      
+      return true;
+    } catch (error) {
+      console.error('❌ AuthProvider: Error en registro:', error);
+      return false;
+    } finally {
+      setLoading(false);
+    }
   };
 
   const logout = () => {
+    console.log('👋 AuthProvider: Cerrando sesión...');
     setUser(null);
-    removeCurrentUserFromLocalStorage();
+    
+    // Limpiar token del API service
+    apiService.logout();
+    
+    // Limpiar también los datos del usuario en localStorage
+    localStorage.removeItem('current_user');
+    
+    console.log('✅ AuthProvider: Sesión cerrada y localStorage limpiado');
   };
 
   const value = {
     user,
     login,
+    register,
     logout,
     isAuthenticated: !!user,
+    loading,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 };
 
 export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  // Cargar datos del localStorage al inicializar
-  const [bonds, setBonds] = useState<BondData[]>(() => loadBondsFromLocalStorage());
+  const { user } = useAuth(); // Acceder al usuario del contexto de autenticación
+  const [bonds, setBonds] = useState<BondData[]>([]);
+  const [loading, setLoading] = useState(false);
   const [config, setConfig] = useState<AppConfig>(() => {
     const savedConfig = loadConfigFromLocalStorage();
     return savedConfig || {
@@ -146,48 +196,139 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     };
   });
 
-  // Guardar bonos en localStorage cada vez que cambien
-  useEffect(() => {
-    saveBondsToLocalStorage(bonds);
-  }, [bonds]);
-
   // Guardar configuración en localStorage cada vez que cambie
   useEffect(() => {
     saveConfigToLocalStorage(config);
   }, [config]);
 
-  const saveBonds = (newBonds: BondData[]) => {
-    setBonds(newBonds);
-  };
+  const loadBonds = useCallback(async () => {
+    console.log('📋 AppProvider: Cargando bonos desde API...');
+    console.log('👤 AppProvider: Usuario actual:', user);
+    console.log('🎭 AppProvider: Rol del usuario:', user?.role);
+    console.log('🆔 AppProvider: ID del usuario:', user?.id);
+    console.log('🆔 AppProvider: Tipo de ID:', typeof user?.id);
+    
+    setLoading(true);
+    try {
+      let bondsData: any[];
+      
+      if (user?.role === 'emisor') {
+        // Emisores ven solo sus bonos
+        console.log('🏭 AppProvider: Cargando bonos del emisor con ID:', user.id);
+        console.log('🌐 AppProvider: URL que se llamará: /api/bonds/user/' + user.id);
+        bondsData = await apiService.getUserBonds(user.id);
+      } else {
+        // Inversores ven todos los bonos disponibles
+        console.log('💰 AppProvider: Cargando todos los bonos disponibles');
+        bondsData = await apiService.getAllBonds();
+      }
+      
+      console.log('✅ AppProvider: Bonos cargados:', bondsData);
+      setBonds(bondsData);
+    } catch (error) {
+      console.error('❌ AppProvider: Error cargando bonos:', error);
+      // Mantener bonos vacíos en caso de error
+      setBonds([]);
+    } finally {
+      setLoading(false);
+    }
+  }, [user]);
 
-  const saveConfig = (newConfig: AppConfig) => {
-    setConfig(newConfig);
-  };
+  // Auto-cargar bonos cuando el usuario está autenticado
+  useEffect(() => {
+    const token = localStorage.getItem('auth_token');
+    if (token && apiService.isAuthenticated() && user) {
+      console.log('🔄 AppProvider: Usuario autenticado detectado, cargando bonos...');
+      // Solo cargar si no hay bonos ya cargados
+      if (bonds.length === 0) {
+        loadBonds();
+      }
+    }
 
-  const addBond = (bondData: Omit<BondData, 'id' | 'createdAt' | 'updatedAt'>) => {
-    const newBond: BondData = {
-      ...bondData,
-      id: Date.now().toString(),
-      createdAt: new Date(),
-      updatedAt: new Date(),
+    // Escuchar el evento de autenticación para cargar bonos
+    const handleUserAuthenticated = () => {
+      console.log('🔔 AppProvider: Evento de autenticación recibido, cargando bonos...');
+      loadBonds();
     };
 
-    const newBonds = [...bonds, newBond];
-    saveBonds(newBonds);
+    window.addEventListener('userAuthenticated', handleUserAuthenticated);
+
+    return () => {
+      window.removeEventListener('userAuthenticated', handleUserAuthenticated);
+    };
+  }, [loadBonds, bonds.length, user]);
+
+  // Limpiar bonos cuando cambie el usuario
+  useEffect(() => {
+    if (user) {
+      console.log('👤 AppProvider: Usuario cambió, limpiando bonos y recargando...');
+      setBonds([]);
+      loadBonds();
+    }
+  }, [user?.id, loadBonds]);
+
+  const addBond = async (bondData: Omit<BondData, 'id' | 'createdAt' | 'updatedAt'>) => {
+    console.log('💰 AppProvider: Añadiendo bono...');
+    setLoading(true);
+    try {
+      const newBond = await apiService.createBond({
+        name: bondData.name,
+        nominalValue: bondData.nominalValue,
+        couponRate: bondData.couponRate,
+        maturityPeriods: bondData.maturityPeriods,
+        frequency: bondData.frequency,
+        marketRate: bondData.marketRate,
+        gracePeriods: bondData.gracePeriods || 0,
+        graceType: bondData.graceType || 'none',
+        currency: bondData.currency || config.currency,
+        interestType: bondData.interestType || config.interestType,
+        capitalization: bondData.capitalization || config.capitalization,
+      });
+      
+      console.log('✅ AppProvider: Bono añadido:', newBond);
+      
+      // Recargar todos los bonos para tener la lista actualizada
+      await loadBonds();
+    } catch (error) {
+      console.error('❌ AppProvider: Error añadiendo bono:', error);
+      throw error;
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const updateBond = (id: string, updates: Partial<BondData>) => {
-    const newBonds = bonds.map(bond =>
-      bond.id === id
-        ? { ...bond, ...updates, updatedAt: new Date() }
-        : bond
-    );
-    saveBonds(newBonds);
+  const updateBond = async (id: string, updates: Partial<BondData>) => {
+    console.log('📝 AppProvider: Actualizando bono:', id);
+    setLoading(true);
+    try {
+      await apiService.updateBond(id, updates);
+      console.log('✅ AppProvider: Bono actualizado');
+      
+      // Recargar todos los bonos para tener la lista actualizada
+      await loadBonds();
+    } catch (error) {
+      console.error('❌ AppProvider: Error actualizando bono:', error);
+      throw error;
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const deleteBond = (id: string) => {
-    const newBonds = bonds.filter(bond => bond.id !== id);
-    saveBonds(newBonds);
+  const deleteBond = async (id: string) => {
+    console.log('🗑️ AppProvider: Eliminando bono:', id);
+    setLoading(true);
+    try {
+      await apiService.deleteBond(id);
+      console.log('✅ AppProvider: Bono eliminado');
+      
+      // Recargar todos los bonos para tener la lista actualizada
+      await loadBonds();
+    } catch (error) {
+      console.error('❌ AppProvider: Error eliminando bono:', error);
+      throw error;
+    } finally {
+      setLoading(false);
+    }
   };
 
   const getBond = (id: string) => {
@@ -196,7 +337,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
   const updateConfig = (updates: Partial<AppConfig>) => {
     const newConfig = { ...config, ...updates };
-    saveConfig(newConfig);
+    setConfig(newConfig);
   };
 
   const value = {
@@ -207,6 +348,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     deleteBond,
     getBond,
     updateConfig,
+    loadBonds,
+    loading,
   };
 
   return <AppContext.Provider value={value}>{children}</AppContext.Provider>;

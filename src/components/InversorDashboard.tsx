@@ -18,13 +18,15 @@ const InversorDashboard: React.FC = () => {
     return matchesSearch && matchesCurrency;
   });
 
-  const handleAnalyzeBond = (bond: BondData) => {
+  const handleAnalyzeBond = async (bond: BondData) => {
     setSelectedBond(bond);
     try {
-      const results = calculateBondResults(bond);
+      console.log('🔍 Analizando bono:', bond.name);
+      const results = await calculateBondResults(bond);
       setBondResults(results);
+      console.log('✅ Resultados obtenidos:', results);
     } catch (error) {
-      console.error('Error calculating bond results:', error);
+      console.error('❌ Error calculating bond results:', error);
       setBondResults(null);
     }
   };
@@ -35,7 +37,11 @@ const InversorDashboard: React.FC = () => {
   };
 
   const formatPercentage = (value: number) => {
-    return `${(value * 100).toFixed(4)}%`;
+    return `${value.toFixed(4)}%`; // Valor ya viene como porcentaje, no multiplicar por 100
+  };
+
+  const formatBondPercentage = (value: number) => {
+    return `${(value * 100).toFixed(4)}%`; // Para tasas del bono almacenadas como decimal
   };
 
   // Estadísticas para el inversor
@@ -189,7 +195,7 @@ const InversorDashboard: React.FC = () => {
                         </div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                        {formatPercentage(bond.couponRate / 100)}
+                        {formatBondPercentage(bond.couponRate)}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                         {bond.currency}

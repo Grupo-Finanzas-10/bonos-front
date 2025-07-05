@@ -15,7 +15,11 @@ const BondResults: React.FC<BondResultsProps> = ({ bondData, results }) => {
   };
 
   const formatPercentage = (value: number) => {
-    return `${(value * 100).toFixed(4)}%`;
+    return `${value.toFixed(4)}%`; // Para tasas ya convertidas a porcentaje (TREA, TCEA)
+  };
+
+  const formatBondPercentage = (value: number) => {
+    return `${(value * 100).toFixed(4)}%`; // Para tasas del bono almacenadas como decimal
   };
 
   const getFrequencyText = (frequency: number) => {
@@ -60,7 +64,7 @@ const BondResults: React.FC<BondResultsProps> = ({ bondData, results }) => {
           </div>
           <div>
             <p className="text-sm text-gray-600">Tasa de Interés del Bono</p>
-            <p className="font-medium">{formatPercentage(bondData.couponRate)}</p>
+            <p className="font-medium">{formatBondPercentage(bondData.couponRate)}</p>
           </div>
           <div>
             <p className="text-sm text-gray-600">Tipo de Interés</p>
@@ -82,7 +86,7 @@ const BondResults: React.FC<BondResultsProps> = ({ bondData, results }) => {
           </div>
           <div>
             <p className="text-sm text-gray-600">Tasa de Descuento del Mercado</p>
-            <p className="font-medium">{formatPercentage(bondData.marketRate)}</p>
+            <p className="font-medium">{formatBondPercentage(bondData.marketRate)}</p>
           </div>
           <div>
             <p className="text-sm text-gray-600">Períodos de Gracia</p>

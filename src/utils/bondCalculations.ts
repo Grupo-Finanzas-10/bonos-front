@@ -199,8 +199,78 @@ export const calculateMaxMarketPrice = (cashFlow: CashFlowItem[], couponRate: nu
   return calculatePresentValue(cashFlow, couponRate, frequency);
 };
 
-// Función principal para calcular todos los resultados del bono
-export const calculateBondResults = (bondData: BondData): BondResults => {
+// Función para calcular todos los resultados del bono usando la API del backend
+export const calculateBondResultsFromAPI = async (bondData: BondData): Promise<BondResults> => {
+  // Importar dinámicamente el apiService para evitar problemas de dependencias circulares
+  const { apiService } = await import('../services/api');
+  
+  try {
+    console.log('🌐 Calculando resultados usando API backend...');
+    console.log('📋 Datos del bono:', bondData);
+    
+    // Preparar datos para la API según el formato exacto que espera el backend
+    const apiData = {
+      name: bondData.name,
+      nominalValue: bondData.nominalValue,
+      couponRate: bondData.couponRate, // Enviar como decimal (0.05 para 5%)
+      maturityPeriods: bondData.maturityPeriods,
+      frequency: bondData.frequency,
+      marketRate: bondData.marketRate, // Enviar como decimal (0.08 para 8%)
+      gracePeriods: bondData.gracePeriods,
+      graceType: bondData.graceType,
+      currency: bondData.currency,
+      interestType: bondData.interestType,
+      capitalization: bondData.capitalization || 1
+    };
+    
+    console.log('📤 Enviando datos a API:', apiData);
+    
+    // Usar marketRate como tasa de oportunidad (enviar como decimal)
+    const tasaOportunidad = bondData.marketRate; // Mantener como decimal
+    
+    // Llamar a la API
+    const apiResponse = await apiService.simulateBond(apiData, tasaOportunidad);
+    
+    console.log('📨 Respuesta de API:', apiResponse);
+    
+    // Calcular flujo de caja localmente (necesario para exportación y tabla)
+    const cashFlow = calculateAmericanBondCashFlow(bondData);
+    
+    // Ajustar tasa de mercado si es necesario para el precio del bono
+    let effectiveMarketRate = bondData.marketRate;
+    if (bondData.interestType === 'nominal' && bondData.capitalization) {
+      effectiveMarketRate = nominalToEffective(bondData.marketRate, bondData.capitalization);
+    }
+    
+    // Calcular precio del bono usando los cálculos locales
+    const presentValue = calculatePresentValue(cashFlow, effectiveMarketRate, bondData.frequency);
+    
+    // Convertir respuesta de API al formato esperado por la interfaz
+    const results: BondResults = {
+      cashFlow,
+      presentValue, // Precio calculado localmente para mantener compatibilidad
+      duration: apiResponse.Duracion,
+      modifiedDuration: apiResponse.Duracion / (1 + effectiveMarketRate / bondData.frequency), // Calcular duración modificada
+      convexity: apiResponse.Convexidad,
+      tcea: apiResponse.TCEA, // Mantener como porcentaje (no dividir por 100)
+      trea: apiResponse.TREA, // Mantener como porcentaje (no dividir por 100)
+      maxMarketPrice: apiResponse.PrecioMaximo,
+    };
+    
+    console.log('✅ Resultados procesados de la API:', results);
+    
+    return results;
+  } catch (error) {
+    console.error('❌ Error calculando con API, usando cálculos locales como fallback:', error);
+    
+    // Fallback a cálculos locales si la API falla
+    console.log('🔄 Usando cálculos locales como fallback...');
+    return calculateBondResultsLocally(bondData);
+  }
+};
+
+// Función principal para calcular todos los resultados del bono usando cálculos locales (LEGACY)
+export const calculateBondResultsLocally = (bondData: BondData): BondResults => {
   // Ajustar tasa de mercado si es necesario
   let effectiveMarketRate = bondData.marketRate;
   if (bondData.interestType === 'nominal' && bondData.capitalization) {
@@ -214,10 +284,10 @@ export const calculateBondResults = (bondData: BondData): BondResults => {
   const convexity = calculateConvexity(cashFlow, effectiveMarketRate, bondData.frequency, presentValue);
   
   // TCEA: Costo para el emisor (asume emisión a valor nominal)
-  const tcea = calculateTCEA(bondData, cashFlow, bondData.nominalValue);
+  const tcea = calculateTCEA(bondData, cashFlow, bondData.nominalValue) * 100; // Convertir a porcentaje
   
   // TREA: Rendimiento para el inversionista (basado en precio de mercado)
-  const trea = calculateTREA(cashFlow, presentValue, bondData.frequency);
+  const trea = calculateTREA(cashFlow, presentValue, bondData.frequency) * 100; // Convertir a porcentaje
   
   // Precio máximo del mercado usando la tasa cupón como descuento
   let effectiveCouponRate = bondData.couponRate;
@@ -237,3 +307,6 @@ export const calculateBondResults = (bondData: BondData): BondResults => {
     maxMarketPrice,
   };
 };
+
+// Función principal que usa la API del backend (recomendada)
+export const calculateBondResults = calculateBondResultsFromAPI;

@@ -14,7 +14,7 @@ const Login: React.FC = () => {
     const [showRegister, setShowRegister] = useState(false);
     const { login } = useAuth();
 
-    const handleSubmit = (e: React.FormEvent) => {
+    const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setError('');
         setSuccessMessage('');
@@ -24,9 +24,19 @@ const Login: React.FC = () => {
             return;
         }
 
-        const success = login(username, password);
-        if (!success) {
-            setError('Credenciales incorrectas. Intente de nuevo.');
+        try {
+            console.log('🔐 Login: Intentando login con usuario:', username);
+            const success = await login(username, password);
+            if (!success) {
+                console.error('❌ Login: Credenciales incorrectas');
+                setError('Credenciales incorrectas. Intente de nuevo.');
+                setPassword('');
+            } else {
+                console.log('✅ Login: Login exitoso');
+            }
+        } catch (error) {
+            console.error('💥 Login: Error en el proceso de login:', error);
+            setError('Error al iniciar sesión. Inténtalo de nuevo.');
             setPassword('');
         }
     };

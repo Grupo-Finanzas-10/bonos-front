@@ -26,7 +26,10 @@ const Navbar: React.FC<NavbarProps> = ({ currentView, onViewChange, onToggleColl
 
   // Opciones de navegación según el rol del usuario
   const getNavItems = () => {
+    console.log('🧭 Navbar: Obteniendo items de navegación para rol:', user?.role);
+    
     if (user?.role === 'emisor') {
+      console.log('🏢 Navbar: Configurando navegación para EMISOR');
       return [
         { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
         { id: 'bonds', label: 'Gestionar Bonos', icon: BarChart2 },
@@ -34,16 +37,20 @@ const Navbar: React.FC<NavbarProps> = ({ currentView, onViewChange, onToggleColl
         { id: 'profile', label: 'Mi Perfil', icon: User },
       ];
     } else if (user?.role === 'inversor') {
+      console.log('👥 Navbar: Configurando navegación para INVERSOR');
       return [
         { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
         { id: 'analysis', label: 'Análisis de Bonos', icon: BarChart2 },
         { id: 'profile', label: 'Mi Perfil', icon: User },
       ];
     }
+    
+    console.log('⚠️ Navbar: Rol no reconocido, sin navegación');
     return [];
   };
 
   const navItems = getNavItems();
+  console.log('📋 Navbar: Items de navegación final:', navItems);
 
   const accentColor = '#28F09D';
   const darkBgColor = 'rgba(8, 16, 40, 1)';

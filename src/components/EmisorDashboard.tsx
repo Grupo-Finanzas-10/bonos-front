@@ -156,7 +156,9 @@ const EmisorDashboard: React.FC = () => {
           </div>
 
           <div className="p-6">
-            {activeTab === 'list' && <BondsList />}
+            <div style={{ display: activeTab === 'list' ? 'block' : 'none' }}>
+              <BondsList />
+            </div>
             {activeTab === 'create' && (
               <BondForm
                 bondId={selectedBond?.id}

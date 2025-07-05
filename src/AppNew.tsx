@@ -1,7 +1,7 @@
-// src/App.tsx
+// src/AppNew.tsx
 import React, { useState } from 'react';
-import { AuthProvider, AppProvider, useAuth } from './context/AppContext';
-import Login from './components/Login';
+import { AuthProvider, AppProvider, useAuth } from './context/AppContextNew';
+import LoginNew from './components/LoginNew';
 import Navbar from './components/Navbar';
 import Dashboard from './components/Dashboard';
 import BondsList from './components/BondsList';
@@ -9,18 +9,25 @@ import Configuration from './components/Configuration';
 import UserProfile from './components/UserProfile';
 import './App.css';
 
-const AppContent: React.FC = () => {
-    const { isAuthenticated, user } = useAuth();
+const AppContentNew: React.FC = () => {
+    const { isAuthenticated, user, loading } = useAuth();
     const [currentView, setCurrentView] = useState('dashboard');
     const [sidebarWidth, setSidebarWidth] = useState('ml-64'); // Estado para el ancho de la barra lateral
 
-    // Log para debugging
-    console.log('🏠 App: Estado de autenticación:', isAuthenticated);
-    console.log('👤 App: Usuario actual:', user);
-    console.log('🎭 App: Rol del usuario:', user?.role);
+    // Mostrar loading mientras se verifica la autenticación
+    if (loading) {
+        return (
+            <div className="min-h-screen bg-gray-100 flex items-center justify-center">
+                <div className="text-center">
+                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
+                    <p className="mt-4 text-gray-600">Verificando autenticación...</p>
+                </div>
+            </div>
+        );
+    }
 
     if (!isAuthenticated) {
-        return <Login />;
+        return <LoginNew />;
     }
 
     const handleToggleCollapse = (isCollapsed: boolean) => {
@@ -28,12 +35,8 @@ const AppContent: React.FC = () => {
     };
 
     const renderView = () => {
-        console.log('🎯 App: Renderizando vista:', currentView);
-        console.log('🎭 App: Rol del usuario para renderizar:', user?.role);
-        
         // Para inversores, permitir dashboard y perfil
         if (user?.role === 'inversor') {
-            console.log('👥 App: Renderizando para INVERSOR');
             switch (currentView) {
                 case 'profile':
                     return <UserProfile />;
@@ -44,7 +47,6 @@ const AppContent: React.FC = () => {
 
         // Para emisores, permitir navegación completa
         if (user?.role === 'emisor') {
-            console.log('🏢 App: Renderizando para EMISOR');
             switch (currentView) {
                 case 'bonds':
                     return <BondsList />;
@@ -57,33 +59,34 @@ const AppContent: React.FC = () => {
             }
         }
 
-        console.log('⚠️ App: Rol no reconocido, usando fallback');
         // Fallback
         return <Dashboard />;
     };
 
     return (
-        <div className="min-h-screen flex">
-            <Navbar currentView={currentView} onViewChange={setCurrentView} onToggleCollapse={handleToggleCollapse} />
-            {/* Aquí aplicamos el color de fondo directamente al main */}
-            <main
-                className={`flex-1 p-6 transition-all duration-300 ease-in-out ${sidebarWidth}`}
-                style={{ backgroundColor: 'rgba(11, 23, 57, 1)' }} // <-- ¡NUEVO COLOR DE FONDO AQUÍ!
-            >
-                {renderView()}
+        <div className="flex h-screen bg-gray-100">
+            <Navbar 
+                currentView={currentView} 
+                onViewChange={setCurrentView} 
+                onToggleCollapse={handleToggleCollapse}
+            />
+            <main className={`flex-1 transition-all duration-300 ${sidebarWidth} bg-gray-50 overflow-hidden`}>
+                <div className="h-full p-6 overflow-y-auto">
+                    {renderView()}
+                </div>
             </main>
         </div>
     );
 };
 
-function App() {
+const AppNew: React.FC = () => {
     return (
         <AuthProvider>
             <AppProvider>
-                <AppContent />
+                <AppContentNew />
             </AppProvider>
         </AuthProvider>
     );
-}
+};
 
-export default App;
+export default AppNew;

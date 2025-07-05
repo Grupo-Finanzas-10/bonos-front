@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { registerUser, isUsernameAvailable, isEmailAvailable } from '../utils/localStorage';
+import { useAuth } from '../context/AppContext';
 import type { User } from '../types';
 import { Eye, EyeOff, User as UserIcon, Building, Mail, Lock, ArrowLeft } from 'lucide-react';
 
@@ -26,6 +26,8 @@ interface FormData {
 }
 
 const Register: React.FC<RegisterProps> = ({ onSuccess, onCancel }) => {
+  const { register } = useAuth();
+  
   const [formData, setFormData] = useState<FormData>({
     username: '',
     password: '',
@@ -54,16 +56,12 @@ const Register: React.FC<RegisterProps> = ({ onSuccess, onCancel }) => {
       newErrors.username = 'El nombre de usuario es obligatorio';
     } else if (formData.username.length < 3) {
       newErrors.username = 'El nombre de usuario debe tener al menos 3 caracteres';
-    } else if (!isUsernameAvailable(formData.username)) {
-      newErrors.username = 'Este nombre de usuario ya existe';
     }
 
     if (!formData.email) {
       newErrors.email = 'El email es obligatorio';
     } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
       newErrors.email = 'El formato del email no es válido';
-    } else if (!isEmailAvailable(formData.email)) {
-      newErrors.email = 'Este email ya está registrado';
     }
 
     if (!formData.password) {
@@ -154,6 +152,7 @@ const Register: React.FC<RegisterProps> = ({ onSuccess, onCancel }) => {
     setIsLoading(true);
     
     try {
+      // Crear el objeto de usuario para registrar
       const userData: Omit<User, 'id' | 'createdAt'> = {
         username: formData.username,
         password: formData.password,
@@ -172,14 +171,28 @@ const Register: React.FC<RegisterProps> = ({ onSuccess, onCancel }) => {
         })
       };
 
-      const result = registerUser(userData);
+      console.log('📝 Register: Enviando datos de registro:', userData);
+
+      // Usar la función register del contexto (ahora es asíncrona)
+      const success = await register(userData);
       
-      if (result.success && result.user) {
-        onSuccess(result.user);
+      if (success) {
+        console.log('✅ Register: Registro exitoso');
+        
+        // Crear un objeto de usuario para mantener compatibilidad con la interfaz
+        const userForCallback: User = {
+          ...userData,
+          id: '', // Se asignará automáticamente
+          createdAt: new Date(),
+        };
+        
+        onSuccess(userForCallback);
       } else {
-        setErrors({ general: result.message });
+        console.error('❌ Register: Fallo en el registro');
+        setErrors({ general: 'Error en el registro. Verifica los datos o intenta con otros.' });
       }
     } catch (error) {
+      console.error('💥 Register: Error en el registro:', error);
       setErrors({ general: 'Error al registrar usuario. Inténtalo de nuevo.' });
     } finally {
       setIsLoading(false);
