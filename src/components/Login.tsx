@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { AlertCircle, User, KeyRound, CheckCircle, Settings } from 'lucide-react';
+import { AlertCircle, User, KeyRound, CheckCircle } from 'lucide-react';
 import backgroundImage from '../assets/164ca665-b3af-401e-8434-96a0b40608c9 1.png';
 import logo from '../assets/Logo.png';
 import { useAuth } from '../context/AppContext';
