@@ -98,7 +98,10 @@ const BondsList: React.FC = () => {
     return `${symbol} ${value.toLocaleString('es-PE', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
   };
 
-  const formatPercentage = (value: number) => {
+  const formatPercentage = (value: number | null | undefined) => {
+    if (value === null || value === undefined || isNaN(value)) {
+      return 'N/A';
+    }
     return `${(value * 100).toFixed(2)}%`;
   };
 
@@ -183,7 +186,7 @@ const BondsList: React.FC = () => {
               loadBonds();
             }}
             disabled={loading}
-            className="bg-gray-600 text-white px-4 py-2 rounded-lg hover:bg-gray-700 transition-colors flex items-center disabled:bg-gray-400 disabled:cursor-not-allowed"
+            className="bg-primary-dark text-white px-4 py-2 rounded-lg hover:opacity-90 transition-colors flex items-center disabled:bg-gray-400 disabled:cursor-not-allowed"
           >
             {loading ? (
               <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
@@ -194,7 +197,7 @@ const BondsList: React.FC = () => {
           </button>
           <button
             onClick={() => setShowForm(true)}
-            className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors flex items-center"
+            className="bg-primary-accent text-black px-4 py-2 rounded-lg hover:opacity-90 transition-colors flex items-center"
           >
             <Plus size={20} className="mr-2" />
             Nuevo Bono
@@ -277,7 +280,7 @@ const BondsList: React.FC = () => {
             <div className="space-y-2">
               <button
                 onClick={() => setShowForm(true)}
-                className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors mr-2"
+                className="bg-primary-accent text-black px-4 py-2 rounded-lg hover:opacity-90 transition-colors mr-2"
               >
                 Crear Primer Bono
               </button>
@@ -286,7 +289,7 @@ const BondsList: React.FC = () => {
                   hasTriedToLoad.current = false;
                   loadBonds();
                 }}
-                className="bg-gray-600 text-white px-4 py-2 rounded-lg hover:bg-gray-700 transition-colors"
+                className="bg-primary-dark text-white px-4 py-2 rounded-lg hover:opacity-90 transition-colors"
               >
                 Recargar Bonos
               </button>

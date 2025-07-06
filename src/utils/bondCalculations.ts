@@ -233,6 +233,21 @@ export const calculateBondResultsFromAPI = async (bondData: BondData): Promise<B
     
     console.log('📨 Respuesta de API:', apiResponse);
     
+    // Validar respuesta de la API - usar nombres en minúsculas como devuelve el backend
+    console.log('🔍 Validando datos de respuesta:');
+    console.log('  - tcea:', apiResponse.tcea, typeof apiResponse.tcea, isNaN(apiResponse.tcea));
+    console.log('  - trea:', apiResponse.trea, typeof apiResponse.trea, isNaN(apiResponse.trea));
+    console.log('  - duracion:', apiResponse.duracion, typeof apiResponse.duracion, isNaN(apiResponse.duracion));
+    console.log('  - convexidad:', apiResponse.convexidad, typeof apiResponse.convexidad, isNaN(apiResponse.convexidad));
+    console.log('  - precioMaximo:', apiResponse.precioMaximo, typeof apiResponse.precioMaximo, isNaN(apiResponse.precioMaximo));
+    
+    // Función helper para convertir valores a números válidos
+    const toValidNumber = (value: any, fallback: number = 0): number => {
+      if (value === null || value === undefined) return fallback;
+      const num = parseFloat(value);
+      return isNaN(num) ? fallback : num;
+    };
+    
     // Calcular flujo de caja localmente (necesario para exportación y tabla)
     const cashFlow = calculateAmericanBondCashFlow(bondData);
     
@@ -245,17 +260,30 @@ export const calculateBondResultsFromAPI = async (bondData: BondData): Promise<B
     // Calcular precio del bono usando los cálculos locales
     const presentValue = calculatePresentValue(cashFlow, effectiveMarketRate, bondData.frequency);
     
-    // Convertir respuesta de API al formato esperado por la interfaz
+    // Convertir respuesta de API al formato esperado por la interfaz con validaciones
+    const duracion = toValidNumber(apiResponse.duracion);
+    const tcea = toValidNumber(apiResponse.tcea) * 100; // Convertir a porcentaje (0.1 -> 10%)
+    const trea = toValidNumber(apiResponse.trea) * 100; // Convertir a porcentaje (0.12 -> 12%)
+    const convexidad = toValidNumber(apiResponse.convexidad);
+    const precioMaximo = toValidNumber(apiResponse.precioMaximo, presentValue);
+    
     const results: BondResults = {
       cashFlow,
       presentValue, // Precio calculado localmente para mantener compatibilidad
-      duration: apiResponse.Duracion,
-      modifiedDuration: apiResponse.Duracion / (1 + effectiveMarketRate / bondData.frequency), // Calcular duración modificada
-      convexity: apiResponse.Convexidad,
-      tcea: apiResponse.TCEA, // Mantener como porcentaje (no dividir por 100)
-      trea: apiResponse.TREA, // Mantener como porcentaje (no dividir por 100)
-      maxMarketPrice: apiResponse.PrecioMaximo,
+      duration: duracion,
+      modifiedDuration: apiResponse.duracionModificada ? toValidNumber(apiResponse.duracionModificada) : (duracion > 0 ? duracion / (1 + effectiveMarketRate / bondData.frequency) : 0),
+      convexity: convexidad,
+      tcea: tcea,
+      trea: trea,
+      maxMarketPrice: precioMaximo,
     };
+    
+    console.log('✅ Resultados procesados de la API:');
+    console.log('  - TCEA final:', results.tcea, typeof results.tcea);
+    console.log('  - TREA final:', results.trea, typeof results.trea);
+    console.log('  - Duracion final:', results.duration, typeof results.duration);
+    console.log('  - Convexidad final:', results.convexity, typeof results.convexity);
+    console.log('  - Precio máximo final:', results.maxMarketPrice, typeof results.maxMarketPrice);
     
     console.log('✅ Resultados procesados de la API:', results);
     

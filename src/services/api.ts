@@ -38,11 +38,13 @@ export interface BondRequest {
 }
 
 export interface BondSimulationResponse {
-  PrecioMaximo: number;
-  Duracion: number;
-  TCEA: number;
-  TREA: number;
-  Convexidad: number;
+  precioMaximo: number;
+  duracion: number;
+  tcea: number;
+  trea: number;
+  convexidad: number;
+  duracionModificada?: number;
+  bondInfo?: any;
 }
 
 // Clase para manejar las llamadas a la API

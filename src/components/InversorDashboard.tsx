@@ -36,7 +36,10 @@ const InversorDashboard: React.FC = () => {
     return `${symbol} ${value.toLocaleString('es-PE', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
   };
 
-  const formatPercentage = (value: number) => {
+  const formatPercentage = (value: number | null | undefined) => {
+    if (value === null || value === undefined || isNaN(value)) {
+      return 'N/A';
+    }
     return `${value.toFixed(4)}%`; // Valor ya viene como porcentaje, no multiplicar por 100
   };
 
@@ -51,12 +54,12 @@ const InversorDashboard: React.FC = () => {
     : 0;
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-white">
       <div className="bg-white shadow-sm border-b">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center py-6">
             <div>
-              <h1 className="text-3xl font-bold text-gray-900">Panel del Inversor</h1>
+              <h1 className="text-3xl font-bold text-primary-dark">Panel del Inversor</h1>
               <p className="mt-1 text-sm text-gray-500">
                 Analiza bonos disponibles y evalúa oportunidades de inversión
               </p>
@@ -72,7 +75,7 @@ const InversorDashboard: React.FC = () => {
             <div className="p-5">
               <div className="flex items-center">
                 <div className="flex-shrink-0">
-                  <Target className="h-6 w-6 text-blue-400" />
+                  <Target className="h-6 w-6 text-primary-accent" />
                 </div>
                 <div className="ml-5 w-0 flex-1">
                   <dl>
@@ -92,7 +95,7 @@ const InversorDashboard: React.FC = () => {
             <div className="p-5">
               <div className="flex items-center">
                 <div className="flex-shrink-0">
-                  <TrendingUp className="h-6 w-6 text-green-400" />
+                  <TrendingUp className="h-6 w-6 text-primary-accent" />
                 </div>
                 <div className="ml-5 w-0 flex-1">
                   <dl>
@@ -112,7 +115,7 @@ const InversorDashboard: React.FC = () => {
             <div className="p-5">
               <div className="flex items-center">
                 <div className="flex-shrink-0">
-                  <DollarSign className="h-6 w-6 text-yellow-400" />
+                  <DollarSign className="h-6 w-6 text-primary-accent" />
                 </div>
                 <div className="ml-5 w-0 flex-1">
                   <dl>
@@ -203,7 +206,7 @@ const InversorDashboard: React.FC = () => {
                       <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                         <button
                           onClick={() => handleAnalyzeBond(bond)}
-                          className="inline-flex items-center px-3 py-1 border border-transparent text-sm leading-4 font-medium rounded-md text-blue-700 bg-blue-100 hover:bg-blue-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                          className="inline-flex items-center px-3 py-1 border border-transparent text-sm leading-4 font-medium rounded-md text-black bg-primary-accent hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500"
                         >
                           <Eye className="h-4 w-4 mr-1" />
                           Analizar

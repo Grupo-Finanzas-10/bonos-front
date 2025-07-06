@@ -14,7 +14,10 @@ const BondResults: React.FC<BondResultsProps> = ({ bondData, results }) => {
     return `${symbol} ${value.toLocaleString('es-PE', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
   };
 
-  const formatPercentage = (value: number) => {
+  const formatPercentage = (value: number | null | undefined) => {
+    if (value === null || value === undefined || isNaN(value)) {
+      return 'N/A';
+    }
     return `${value.toFixed(4)}%`; // Para tasas ya convertidas a porcentaje (TREA, TCEA)
   };
 

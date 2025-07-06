@@ -65,10 +65,9 @@ const AppContent: React.FC = () => {
     return (
         <div className="min-h-screen flex">
             <Navbar currentView={currentView} onViewChange={setCurrentView} onToggleCollapse={handleToggleCollapse} />
-            {/* Aquí aplicamos el color de fondo directamente al main */}
+            {/* Fondo blanco para todas las vistas, manteniendo el navbar con su color */}
             <main
-                className={`flex-1 p-6 transition-all duration-300 ease-in-out ${sidebarWidth}`}
-                style={{ backgroundColor: 'rgba(11, 23, 57, 1)' }} // <-- ¡NUEVO COLOR DE FONDO AQUÍ!
+                className={`flex-1 p-6 transition-all duration-300 ease-in-out ${sidebarWidth} bg-white`}
             >
                 {renderView()}
             </main>

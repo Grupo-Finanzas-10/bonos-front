@@ -35,7 +35,10 @@ const BondSimulation: React.FC<BondSimulationProps> = ({ bond }) => {
     }).format(value);
   };
 
-  const formatPercentage = (value: number) => {
+  const formatPercentage = (value: number | null | undefined) => {
+    if (value === null || value === undefined || isNaN(value)) {
+      return 'N/A';
+    }
     return `${value.toFixed(2)}%`; // Para tasas ya convertidas a porcentaje (TREA, TCEA)
   };
 

@@ -26,9 +26,9 @@ const Configuration: React.FC = () => {
     <div className="max-w-2xl mx-auto space-y-6">
       {/* Header */}
       <div className="flex items-center space-x-3">
-        <Settings className="h-8 w-8 text-blue-600" />
+        <Settings className="h-8 w-8 text-primary-accent" />
         <div>
-          <h1 className="text-2xl font-bold text-gray-800">Configuración del Sistema</h1>
+          <h1 className="text-2xl font-bold text-primary-dark">Configuración del Sistema</h1>
           <p className="text-gray-600">Configure los parámetros por defecto para nuevos bonos</p>
         </div>
       </div>
@@ -133,7 +133,7 @@ const Configuration: React.FC = () => {
           <div className="flex justify-end">
             <button
               type="submit"
-              className="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors flex items-center"
+              className="bg-primary-accent text-black px-6 py-2 rounded-lg hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-green-500 transition-colors flex items-center"
             >
               <Save size={16} className="mr-2" />
               Guardar Configuración

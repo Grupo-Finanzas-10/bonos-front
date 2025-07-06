@@ -138,9 +138,9 @@ const UserProfile: React.FC = () => {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center space-x-3">
-          <User className="h-8 w-8 text-blue-600" />
+          <User className="h-8 w-8 text-primary-accent" />
           <div>
-            <h1 className="text-2xl font-bold text-gray-800">Mi Perfil</h1>
+            <h1 className="text-2xl font-bold text-primary-dark">Mi Perfil</h1>
             <p className="text-gray-600">Gestiona tu información personal y preferencias</p>
           </div>
         </div>
@@ -148,7 +148,7 @@ const UserProfile: React.FC = () => {
         {!isEditing && (
           <button
             onClick={() => setIsEditing(true)}
-            className="flex items-center space-x-2 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors"
+            className="flex items-center space-x-2 bg-primary-accent text-black px-4 py-2 rounded-lg hover:opacity-90 transition-colors"
           >
             <Edit size={16} />
             <span>Editar Perfil</span>

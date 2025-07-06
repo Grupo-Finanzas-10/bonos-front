@@ -8,7 +8,7 @@ const Dashboard: React.FC = () => {
 
   if (!user) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+      <div className="min-h-screen bg-white flex items-center justify-center">
         <div className="text-center">
           <h2 className="text-2xl font-bold text-gray-900 mb-4">
             Error de Autenticación
@@ -30,7 +30,7 @@ const Dashboard: React.FC = () => {
 
   // Fallback en caso de rol no reconocido
   return (
-    <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+    <div className="min-h-screen bg-white flex items-center justify-center">
       <div className="text-center">
         <h2 className="text-2xl font-bold text-gray-900 mb-4">
           Rol no reconocido

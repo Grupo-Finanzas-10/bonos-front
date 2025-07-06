@@ -29,12 +29,12 @@ const EmisorDashboard: React.FC = () => {
     : 0;
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-white">
       <div className="bg-white shadow-sm border-b">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center py-6">
             <div>
-              <h1 className="text-3xl font-bold text-gray-900">Panel del Emisor</h1>
+              <h1 className="text-3xl font-bold text-primary-dark">Panel del Emisor</h1>
               <p className="mt-1 text-sm text-gray-500">
                 Gestiona tus bonos corporativos y analiza costos de financiamiento
               </p>
@@ -42,7 +42,7 @@ const EmisorDashboard: React.FC = () => {
             {bonds.length > 0 && (
               <button
                 onClick={() => exportBondSummaryToCSV(bonds)}
-                className="inline-flex items-center px-4 py-2 bg-green-600 hover:bg-green-700 text-white font-medium rounded-lg transition-colors duration-200"
+                className="inline-flex items-center px-4 py-2 bg-primary-accent hover:opacity-90 text-black font-medium rounded-lg transition-colors duration-200"
               >
                 <Download className="h-4 w-4 mr-2" />
                 Exportar Resumen
@@ -59,7 +59,7 @@ const EmisorDashboard: React.FC = () => {
             <div className="p-5">
               <div className="flex items-center">
                 <div className="flex-shrink-0">
-                  <BarChart3 className="h-6 w-6 text-blue-400" />
+                  <BarChart3 className="h-6 w-6 text-primary-accent" />
                 </div>
                 <div className="ml-5 w-0 flex-1">
                   <dl>
@@ -79,7 +79,7 @@ const EmisorDashboard: React.FC = () => {
             <div className="p-5">
               <div className="flex items-center">
                 <div className="flex-shrink-0">
-                  <TrendingUp className="h-6 w-6 text-green-400" />
+                  <TrendingUp className="h-6 w-6 text-primary-accent" />
                 </div>
                 <div className="ml-5 w-0 flex-1">
                   <dl>
@@ -99,7 +99,7 @@ const EmisorDashboard: React.FC = () => {
             <div className="p-5">
               <div className="flex items-center">
                 <div className="flex-shrink-0">
-                  <DollarSign className="h-6 w-6 text-yellow-400" />
+                  <DollarSign className="h-6 w-6 text-primary-accent" />
                 </div>
                 <div className="ml-5 w-0 flex-1">
                   <dl>
@@ -124,7 +124,7 @@ const EmisorDashboard: React.FC = () => {
                 onClick={() => setActiveTab('list')}
                 className={`w-1/3 py-4 px-1 text-center border-b-2 font-medium text-sm ${
                   activeTab === 'list'
-                    ? 'border-blue-500 text-blue-600'
+                    ? 'border-primary-accent text-primary-dark'
                     : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
                 }`}
               >
@@ -134,7 +134,7 @@ const EmisorDashboard: React.FC = () => {
                 onClick={handleCreateBond}
                 className={`w-1/3 py-4 px-1 text-center border-b-2 font-medium text-sm ${
                   activeTab === 'create'
-                    ? 'border-blue-500 text-blue-600'
+                    ? 'border-primary-accent text-primary-dark'
                     : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
                 }`}
               >
@@ -145,7 +145,7 @@ const EmisorDashboard: React.FC = () => {
                 onClick={() => setActiveTab('config')}
                 className={`w-1/3 py-4 px-1 text-center border-b-2 font-medium text-sm ${
                   activeTab === 'config'
-                    ? 'border-blue-500 text-blue-600'
+                    ? 'border-primary-accent text-primary-dark'
                     : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
                 }`}
               >

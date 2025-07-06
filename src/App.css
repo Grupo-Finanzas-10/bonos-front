@@ -3,6 +3,16 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Paleta de colores personalizada */
+:root {
+  --primary-accent: #28F09D;
+  --primary-dark: rgba(8, 16, 40, 1);
+  --secondary-blue: rgb(147, 197, 253);
+  --secondary-green: rgb(134, 239, 172);
+  --text-primary: rgba(17, 24, 39, 0.87);
+  --text-secondary: rgba(75, 85, 99, 1);
+}
+
 /* Custom animations */
 @keyframes slide-in-right {
   from {
@@ -27,7 +37,28 @@
 body {
   margin: 0;
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
-  background-color: #f9fafb;
+  background-color: #ffffff; /* Cambio a blanco */
+}
+
+/* Clases de utilidad para los colores personalizados */
+.text-primary-accent {
+  color: var(--primary-accent) !important;
+}
+
+.bg-primary-accent {
+  background-color: var(--primary-accent) !important;
+}
+
+.text-primary-dark {
+  color: var(--primary-dark) !important;
+}
+
+.bg-primary-dark {
+  background-color: var(--primary-dark) !important;
+}
+
+.border-primary-accent {
+  border-color: var(--primary-accent) !important;
 }
 
 /* Scrollbar styling */

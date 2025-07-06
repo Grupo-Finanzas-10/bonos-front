@@ -5,13 +5,54 @@
   box-sizing: border-box;
 }
 
+:root {
+  /* Paleta de colores de la aplicación */
+  --primary-accent: #28F09D;
+  --primary-dark: rgba(8, 16, 40, 1);
+  --secondary-blue: rgb(147, 197, 253);
+  --secondary-green: rgb(134, 239, 172);
+  --text-primary: rgba(17, 24, 39, 0.87);
+  --text-secondary: rgba(75, 85, 99, 1);
+}
+
 html, body {
   height: 100%;
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+  background-color: #ffffff; /* Fondo blanco por defecto */
 }
 
 #root {
   height: 100%;
   display: flex;
   flex-direction: column;
+  background-color: #ffffff; /* Asegurar fondo blanco en el root */
+}
+
+/* Utilidades personalizadas para colores */
+.text-primary-accent {
+  color: var(--primary-accent);
+}
+
+.bg-primary-accent {
+  background-color: var(--primary-accent);
+}
+
+.text-primary-dark {
+  color: var(--primary-dark);
+}
+
+.bg-primary-dark {
+  background-color: var(--primary-dark);
+}
+
+.border-primary-accent {
+  border-color: var(--primary-accent);
+}
+
+.hover-bg-primary-accent:hover {
+  background-color: var(--primary-accent);
+}
+
+.hover-text-primary-accent:hover {
+  color: var(--primary-accent);
 }
