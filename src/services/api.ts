@@ -1,5 +1,7 @@
 // Configuración base de la API
-const API_BASE_URL = 'http://localhost:8080'; // Cambia esto por la URL de tu backend
+// En desarrollo, usar proxy de Vite; en producción, usar URL completa
+const isDevelopment = import.meta.env.DEV;
+const API_BASE_URL = isDevelopment ? '' : 'http://localhost:8080'; // Proxy en dev, URL completa en prod
 
 // Tipos para la respuesta de autenticación
 export interface LoginResponse {
@@ -53,6 +55,7 @@ class ApiService {
 
   constructor(baseUrl: string = API_BASE_URL) {
     this.baseUrl = baseUrl;
+    console.log('🔧 ApiService inicializado con URL base:', this.baseUrl);
   }
 
   // Obtener el token del localStorage
@@ -251,8 +254,15 @@ class ApiService {
     return !!this.getToken();
   }
 
+  // Método para cambiar la URL base de la API dinámicamente
   setBaseUrl(url: string): void {
     this.baseUrl = url;
+    console.log('🔧 URL base de la API actualizada a:', this.baseUrl);
+  }
+
+  // Método para obtener la URL base actual
+  getBaseUrl(): string {
+    return this.baseUrl;
   }
 }
 

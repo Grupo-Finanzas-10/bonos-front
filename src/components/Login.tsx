@@ -1,9 +1,10 @@
 import React, { useState } from 'react';
-import { AlertCircle, User, KeyRound, CheckCircle } from 'lucide-react';
+import { AlertCircle, User, KeyRound, CheckCircle, Settings } from 'lucide-react';
 import backgroundImage from '../assets/164ca665-b3af-401e-8434-96a0b40608c9 1.png';
 import logo from '../assets/Logo.png';
 import { useAuth } from '../context/AppContext';
 import Register from './Register';
+import ApiConfig from './ApiConfig';
 import type { User as UserType } from '../types';
 
 const Login: React.FC = () => {
@@ -12,6 +13,7 @@ const Login: React.FC = () => {
     const [error, setError] = useState('');
     const [successMessage, setSuccessMessage] = useState('');
     const [showRegister, setShowRegister] = useState(false);
+    const [showApiConfig, setShowApiConfig] = useState(false);
     const { login } = useAuth();
 
     const handleSubmit = async (e: React.FormEvent) => {
@@ -70,13 +72,50 @@ const Login: React.FC = () => {
         setSuccessMessage('');
     };
 
-    // Si se está mostrando el registro, renderizar el componente Register
+    const handleShowApiConfig = () => {
+        setShowApiConfig(true);
+        setError('');
+        setSuccessMessage('');
+    };
+
+    const handleCancelApiConfig = () => {
+        setShowApiConfig(false);
+        setError('');
+        setSuccessMessage('');
+    };
+
+    // Mostrar componente de registro si está activo
     if (showRegister) {
         return (
             <Register 
                 onSuccess={handleRegisterSuccess}
                 onCancel={handleCancelRegister}
             />
+        );
+    }
+
+    // Mostrar componente de configuración de API si está activo
+    if (showApiConfig) {
+        return (
+            <div className="min-h-screen bg-gradient-to-br from-[#0D1117] to-[#161B22] flex items-center justify-center p-4">
+                <div className="w-full max-w-2xl">
+                    <div className="text-center mb-6">
+                        <h1 className="text-3xl font-bold text-white mb-2">Configuración del Backend</h1>
+                        <p className="text-gray-400">Configura la URL del servidor backend para conectar la aplicación</p>
+                    </div>
+                    
+                    <ApiConfig onConfigured={() => console.log('API configurada')} />
+                    
+                    <div className="text-center mt-6">
+                        <button
+                            onClick={handleCancelApiConfig}
+                            className="px-6 py-2 bg-gray-600 text-white rounded-md hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-gray-500"
+                        >
+                            Volver al Login
+                        </button>
+                    </div>
+                </div>
+            </div>
         );
     }
 
@@ -203,6 +242,15 @@ const Login: React.FC = () => {
                                     className="text-[#28F09D] hover:text-green-400 transition-colors underline"
                                 >
                                     ¿No tienes cuenta? Regístrate aquí
+                                </button>
+                            </div>
+                            <div>
+                                <button
+                                    type="button"
+                                    onClick={handleShowApiConfig}
+                                    className="text-[#28F09D] hover:text-green-400 transition-colors underline"
+                                >
+                                    Configuración de API
                                 </button>
                             </div>
                         </div>
