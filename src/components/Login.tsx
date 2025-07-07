@@ -1,10 +1,9 @@
 import React, { useState } from 'react';
-import { AlertCircle, User, KeyRound, CheckCircle, Settings } from 'lucide-react';
+import { AlertCircle, User, KeyRound, CheckCircle } from 'lucide-react';
 import backgroundImage from '../assets/164ca665-b3af-401e-8434-96a0b40608c9 1.png';
 import logo from '../assets/Logo.png';
 import { useAuth } from '../context/AppContext';
 import Register from './Register';
-import ApiConfig from './ApiConfig';
 import type { User as UserType } from '../types';
 
 const Login: React.FC = () => {
@@ -13,7 +12,6 @@ const Login: React.FC = () => {
     const [error, setError] = useState('');
     const [successMessage, setSuccessMessage] = useState('');
     const [showRegister, setShowRegister] = useState(false);
-    const [showApiConfig, setShowApiConfig] = useState(false);
     const { login } = useAuth();
 
     const handleSubmit = async (e: React.FormEvent) => {
@@ -68,18 +66,6 @@ const Login: React.FC = () => {
 
     const handleCancelRegister = () => {
         setShowRegister(false);
-        setError('');
-        setSuccessMessage('');
-    };
-
-    const handleShowApiConfig = () => {
-        setShowApiConfig(true);
-        setError('');
-        setSuccessMessage('');
-    };
-
-    const handleCancelApiConfig = () => {
-        setShowApiConfig(false);
         setError('');
         setSuccessMessage('');
     };
