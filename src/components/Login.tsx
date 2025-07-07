@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { AlertCircle, User, KeyRound, CheckCircle } from 'lucide-react';
+import { AlertCircle, User, KeyRound, CheckCircle, Settings } from 'lucide-react';
 import backgroundImage from '../assets/164ca665-b3af-401e-8434-96a0b40608c9 1.png';
 import logo from '../assets/Logo.png';
 import { useAuth } from '../context/AppContext';
@@ -91,31 +91,6 @@ const Login: React.FC = () => {
                 onSuccess={handleRegisterSuccess}
                 onCancel={handleCancelRegister}
             />
-        );
-    }
-
-    // Mostrar componente de configuración de API si está activo
-    if (showApiConfig) {
-        return (
-            <div className="min-h-screen bg-gradient-to-br from-[#0D1117] to-[#161B22] flex items-center justify-center p-4">
-                <div className="w-full max-w-2xl">
-                    <div className="text-center mb-6">
-                        <h1 className="text-3xl font-bold text-white mb-2">Configuración del Backend</h1>
-                        <p className="text-gray-400">Configura la URL del servidor backend para conectar la aplicación</p>
-                    </div>
-                    
-                    <ApiConfig onConfigured={() => console.log('API configurada')} />
-                    
-                    <div className="text-center mt-6">
-                        <button
-                            onClick={handleCancelApiConfig}
-                            className="px-6 py-2 bg-gray-600 text-white rounded-md hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-gray-500"
-                        >
-                            Volver al Login
-                        </button>
-                    </div>
-                </div>
-            </div>
         );
     }
 
@@ -211,24 +186,7 @@ const Login: React.FC = () => {
                                 Iniciar Sesión
                             </button>
 
-                            {/* Información de usuarios demo */}
-                            <div className="mt-6 p-4 bg-[#0D1117] bg-opacity-70 border border-gray-700 rounded-lg">
-                                <h3 className="text-sm font-medium text-[#28F09D] mb-3">Usuarios de Demo:</h3>
-                                <div className="space-y-2 text-xs text-gray-300">
-                                    <div className="flex justify-between items-center">
-                                        <span><strong className="text-white">Emisor:</strong> emisor / emisor123</span>
-                                        <span className="text-blue-400">(Gestiona bonos)</span>
-                                    </div>
-                                    <div className="flex justify-between items-center">
-                                        <span><strong className="text-white">Inversor:</strong> inversor / inversor123</span>
-                                        <span className="text-green-400">(Analiza inversiones)</span>
-                                    </div>
-                                    <div className="flex justify-between items-center">
-                                        <span><strong className="text-white">Admin:</strong> admin / admin123</span>
-                                        <span className="text-purple-400">(Permisos de emisor)</span>
-                                    </div>
-                                </div>
-                            </div>
+                        
                         </form>
 
                         <div className="text-center text-gray-400 mt-8 text-sm space-y-2">
@@ -242,15 +200,6 @@ const Login: React.FC = () => {
                                     className="text-[#28F09D] hover:text-green-400 transition-colors underline"
                                 >
                                     ¿No tienes cuenta? Regístrate aquí
-                                </button>
-                            </div>
-                            <div>
-                                <button
-                                    type="button"
-                                    onClick={handleShowApiConfig}
-                                    className="text-[#28F09D] hover:text-green-400 transition-colors underline"
-                                >
-                                    Configuración de API
                                 </button>
                             </div>
                         </div>
